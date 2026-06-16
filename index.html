@@ -3,24 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quiz Fête de la Musique - Direction de Site</title>
+<title>Quiz Top Chrono - Fête de la Musique</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="glow"></div>
 <canvas id="confetti"></canvas>
 
+<button class="music-toggle" onclick="toggleMusic()" id="musicBtn" title="Ambiance musicale">🔇</button>
+
 <header>
   <img src="assets/theme.png" class="logo" alt="Fête de la Musique 2026">
   <div class="title-block">
-    <h1>Quiz musical & cinéma</h1>
+    <h1>Quiz Top Chrono</h1>
     <p>Cadeaux offerts par la <strong>Direction de Site</strong></p>
   </div>
 </header>
 
 <main class="quiz-card" id="quizCard">
   <section class="topline">
-    <div class="counter" id="counter">Question 1 / 30</div>
+    <div>
+      <div class="counter" id="counter">Question 1 / 30</div>
+      <div class="chrono-mode" id="chronoMode">Temps adapté à la lecture</div>
+    </div>
+
     <div class="timer-wrap">
       <svg class="timer-ring" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="52" class="timer-bg"></circle>
@@ -33,8 +39,8 @@
   <div class="question" id="question"></div>
 
   <div class="answer-buttons">
-    <button class="round answer-true" onclick="answer(true)">VRAI</button>
-    <button class="round answer-false" onclick="answer(false)">FAUX</button>
+    <button class="round answer-yes" onclick="answer(true)">OUI</button>
+    <button class="round answer-no" onclick="answer(false)">NON</button>
   </div>
 
   <section id="reveal" class="reveal hidden">
@@ -51,9 +57,9 @@
 </main>
 
 <footer class="controls">
-  <button onclick="toggleMusic()" id="musicBtn">Activer l’ambiance musicale</button>
-  <button onclick="setTimerDuration(10)">Chrono 10 s</button>
-  <button onclick="setTimerDuration(15)">Chrono 15 s</button>
+  <button onclick="setTimerMode('auto')">Top chrono auto</button>
+  <button onclick="setTimerMode(10)">10 s fixe</button>
+  <button onclick="setTimerMode(15)">15 s fixe</button>
   <button onclick="toggleFullscreen()">Plein écran</button>
 </footer>
 

@@ -152,6 +152,7 @@ const QUESTIONS = [
 ];
 
 let current = 0;
+let timerMode = "auto";
 let timerDuration = 15;
 let timeLeft = timerDuration;
 let timerInterval = null;
@@ -164,10 +165,28 @@ let musicTimer = null;
 const timerProgress = () => document.getElementById("timerProgress");
 const timerText = () => document.getElementById("timer");
 
+function calculateReadingTime(question){
+  const words = question.trim().split(/\s+/).length;
+  // Temps de lecture confortable sur écran/TV : environ 2,4 mots par seconde + 6 s pour répondre.
+  const seconds = Math.ceil(words / 2.4) + 6;
+  return Math.min(26, Math.max(12, seconds));
+}
+
+function getQuestionDuration(q){
+  if(timerMode === "auto") return calculateReadingTime(q.question);
+  return Number(timerMode);
+}
+
 function renderQuestion(){
   const q = QUESTIONS[current];
+  timerDuration = getQuestionDuration(q);
+
   document.getElementById("counter").textContent = `Question ${current + 1} / ${QUESTIONS.length}`;
+  document.getElementById("chronoMode").textContent = timerMode === "auto"
+    ? `Top chrono automatique : ${timerDuration} s`
+    : `Chrono fixe : ${timerDuration} s`;
   document.getElementById("question").textContent = q.question;
+
   document.getElementById("reveal").className = "reveal hidden";
   document.getElementById("feedback").className = "feedback";
   document.getElementById("feedback").textContent = "";
@@ -175,19 +194,21 @@ function renderQuestion(){
   document.getElementById("explanation").textContent = "";
   document.querySelectorAll(".round").forEach(b => b.disabled = false);
   document.getElementById("quizCard").className = "quiz-card";
+
   answered = false;
   restartTimer();
 }
 
-function setTimerDuration(seconds){
-  timerDuration = seconds;
-  restartTimer();
+function setTimerMode(mode){
+  timerMode = mode;
+  renderQuestion();
 }
 
 function restartTimer(){
   clearInterval(timerInterval);
   timeLeft = timerDuration;
   updateTimerDisplay();
+
   if(!answered){
     timerInterval = setInterval(() => {
       timeLeft--;
@@ -234,10 +255,10 @@ function revealAnswer(isCorrect, q, timeout){
   const reveal = document.getElementById("reveal");
   const card = document.getElementById("quizCard");
 
-  feedback.className = "feedback " + (isCorrect ? "correct" : "wrong");
+  feedback.className = "feedback " + (timeout ? "timeout" : (isCorrect ? "correct" : "wrong"));
   feedback.textContent = timeout ? "Temps écoulé" : (isCorrect ? "Bonne réponse" : "Mauvaise réponse");
 
-  correctAnswer.textContent = "Réponse : " + (q.answer ? "Vrai" : "Faux");
+  correctAnswer.textContent = "Réponse : " + (q.answer ? "Oui" : "Non");
   explanation.textContent = q.why;
   reveal.className = "reveal";
   card.className = "quiz-card " + (isCorrect ? "good" : "bad");
@@ -285,7 +306,7 @@ function tone(freq, duration, type="sine", volume=.05){
 
 function tickSound(){
   ensureAudio();
-  tone(timeLeft <= 5 ? 760 : 520, .08, "square", .025);
+  tone(timeLeft <= 5 ? 760 : 520, .08, "square", .022);
 }
 
 function successSound(){
@@ -304,7 +325,9 @@ function wrongSound(){
 function toggleMusic(){
   ensureAudio();
   musicOn = !musicOn;
-  document.getElementById("musicBtn").textContent = musicOn ? "Couper l’ambiance musicale" : "Activer l’ambiance musicale";
+  const btn = document.getElementById("musicBtn");
+  btn.textContent = musicOn ? "🎵" : "🔇";
+  btn.className = musicOn ? "music-toggle on" : "music-toggle";
 
   clearInterval(musicTimer);
   if(musicOn){
@@ -357,9 +380,10 @@ function confettiBurst(){
 document.addEventListener("keydown", (e) => {
   if(e.key === "ArrowRight") nextQuestion();
   if(e.key === "ArrowLeft") previousQuestion();
-  if(e.key.toLowerCase() === "v") answer(true);
-  if(e.key.toLowerCase() === "f") answer(false);
+  if(e.key.toLowerCase() === "o") answer(true);
+  if(e.key.toLowerCase() === "n") answer(false);
   if(e.key === " ") restartTimer();
+  if(e.key.toLowerCase() === "m") toggleMusic();
 });
 
 renderQuestion();
