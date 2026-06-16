@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz Fête de la Musique - Direction de Site</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="glow"></div>
+<canvas id="confetti"></canvas>
+
+<header>
+  <img src="assets/theme.png" class="logo" alt="Fête de la Musique 2026">
+  <div class="title-block">
+    <h1>Quiz musical & cinéma</h1>
+    <p>Cadeaux offerts par la <strong>Direction de Site</strong></p>
+  </div>
+</header>
+
+<main class="quiz-card" id="quizCard">
+  <section class="topline">
+    <div class="counter" id="counter">Question 1 / 30</div>
+    <div class="timer-wrap">
+      <svg class="timer-ring" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" class="timer-bg"></circle>
+        <circle cx="60" cy="60" r="52" class="timer-progress" id="timerProgress"></circle>
+      </svg>
+      <div class="timer" id="timer">15</div>
+    </div>
+  </section>
+
+  <div class="question" id="question"></div>
+
+  <div class="answer-buttons">
+    <button class="round answer-true" onclick="answer(true)">VRAI</button>
+    <button class="round answer-false" onclick="answer(false)">FAUX</button>
+  </div>
+
+  <section id="reveal" class="reveal hidden">
+    <div id="feedback" class="feedback"></div>
+    <div id="correctAnswer" class="correct-answer"></div>
+    <div id="explanation" class="explanation"></div>
+  </section>
+
+  <div class="nav">
+    <button onclick="previousQuestion()">← Précédente</button>
+    <button onclick="restartTimer()">Relancer le chrono</button>
+    <button onclick="nextQuestion()">Question suivante →</button>
+  </div>
+</main>
+
+<footer class="controls">
+  <button onclick="toggleMusic()" id="musicBtn">Activer l’ambiance musicale</button>
+  <button onclick="setTimerDuration(10)">Chrono 10 s</button>
+  <button onclick="setTimerDuration(15)">Chrono 15 s</button>
+  <button onclick="toggleFullscreen()">Plein écran</button>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
