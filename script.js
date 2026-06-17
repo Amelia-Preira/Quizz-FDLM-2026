@@ -1,4 +1,4 @@
-const QUESTIONS = [
+const QUESTION_BANK = [
   {
     "question": "Dans La Reine des neiges, Libérée, délivrée est chantée par Anna.",
     "answer": false,
@@ -150,69 +150,79 @@ const QUESTIONS = [
     "why": "Leur fille s’appelle Mercredi."
   }
 ];
+const QUESTIONS_PER_GAME = 10;
+const QUALIFY_SCORE = 8;
 
+let gameQuestions = [];
 let current = 0;
+let score = 0;
 let timerMode = "auto";
 let timerDuration = 15;
 let timeLeft = timerDuration;
 let timerInterval = null;
 let answered = false;
 
-let audioCtx = null;
-let musicOn = false;
-let musicTimer = null;
-
 const timerProgress = () => document.getElementById("timerProgress");
 const timerText = () => document.getElementById("timer");
 
-function calculateReadingTime(question){
-  const words = question.trim().split(/\s+/).length;
-  // Temps de lecture confortable sur écran/TV : environ 2,4 mots par seconde + 6 s pour répondre.
-  const seconds = Math.ceil(words / 2.4) + 6;
-  return Math.min(26, Math.max(12, seconds));
+function shuffle(array){
+  const arr = [...array];
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
-function getQuestionDuration(q){
+function startGame(){
+  gameQuestions = shuffle(QUESTION_BANK).slice(0, QUESTIONS_PER_GAME);
+  current = 0;
+  score = 0;
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("endScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  renderQuestion();
+}
+
+function calculateReadingTime(question){
+  const words = question.trim().split(/\s+/).length;
+  const seconds = Math.ceil(words / 2.4) + 6;
+  return Math.min(24, Math.max(10, seconds));
+}
+
+function getDuration(q){
   if(timerMode === "auto") return calculateReadingTime(q.question);
   return Number(timerMode);
 }
 
+function setTimerMode(mode){
+  timerMode = mode;
+  if(gameQuestions.length > 0) renderQuestion();
+}
+
 function renderQuestion(){
-  const q = QUESTIONS[current];
-  timerDuration = getQuestionDuration(q);
-
-  document.getElementById("counter").textContent = `Question ${current + 1} / ${QUESTIONS.length}`;
-  document.getElementById("chronoMode").textContent = timerMode === "auto"
-    ? `Top chrono automatique : ${timerDuration} s`
-    : `Chrono fixe : ${timerDuration} s`;
+  const q = gameQuestions[current];
+  timerDuration = getDuration(q);
+  document.getElementById("counter").textContent = `Question ${current + 1} / ${QUESTIONS_PER_GAME}`;
+  document.getElementById("scoreMini").textContent = `Score actuel : ${score} / ${current}`;
   document.getElementById("question").textContent = q.question;
-
   document.getElementById("reveal").className = "reveal hidden";
   document.getElementById("feedback").className = "feedback";
   document.getElementById("feedback").textContent = "";
   document.getElementById("correctAnswer").textContent = "";
   document.getElementById("explanation").textContent = "";
   document.querySelectorAll(".round").forEach(b => b.disabled = false);
-  document.getElementById("quizCard").className = "quiz-card";
-
   answered = false;
   restartTimer();
-}
-
-function setTimerMode(mode){
-  timerMode = mode;
-  renderQuestion();
 }
 
 function restartTimer(){
   clearInterval(timerInterval);
   timeLeft = timerDuration;
   updateTimerDisplay();
-
   if(!answered){
     timerInterval = setInterval(() => {
       timeLeft--;
-      tickSound();
       updateTimerDisplay();
       if(timeLeft <= 0){
         clearInterval(timerInterval);
@@ -233,15 +243,15 @@ function updateTimerDisplay(){
 function answer(choice){
   if(answered) return;
   clearInterval(timerInterval);
-
-  const q = QUESTIONS[current];
+  const q = gameQuestions[current];
   const isCorrect = choice === q.answer;
+  if(isCorrect) score++;
   revealAnswer(isCorrect, q, false);
 }
 
 function timeoutReveal(){
   if(answered) return;
-  const q = QUESTIONS[current];
+  const q = gameQuestions[current];
   revealAnswer(false, q, true);
 }
 
@@ -250,35 +260,35 @@ function revealAnswer(isCorrect, q, timeout){
   document.querySelectorAll(".round").forEach(b => b.disabled = true);
 
   const feedback = document.getElementById("feedback");
-  const correctAnswer = document.getElementById("correctAnswer");
-  const explanation = document.getElementById("explanation");
-  const reveal = document.getElementById("reveal");
-  const card = document.getElementById("quizCard");
-
   feedback.className = "feedback " + (timeout ? "timeout" : (isCorrect ? "correct" : "wrong"));
   feedback.textContent = timeout ? "Temps écoulé" : (isCorrect ? "Bonne réponse" : "Mauvaise réponse");
 
-  correctAnswer.textContent = "Réponse : " + (q.answer ? "Oui" : "Non");
-  explanation.textContent = q.why;
-  reveal.className = "reveal";
-  card.className = "quiz-card " + (isCorrect ? "good" : "bad");
+  document.getElementById("correctAnswer").textContent = "Réponse : " + (q.answer ? "Oui" : "Non");
+  document.getElementById("explanation").textContent = q.why;
+  document.getElementById("reveal").className = "reveal";
 
-  if(isCorrect){
-    successSound();
-    confettiBurst();
-  } else {
-    wrongSound();
-  }
+  if(isCorrect) confettiBurst();
 }
 
 function nextQuestion(){
-  current = (current + 1) % QUESTIONS.length;
-  renderQuestion();
+  if(!answered) return;
+  if(current < QUESTIONS_PER_GAME - 1){
+    current++;
+    renderQuestion();
+  } else {
+    endGame();
+  }
 }
 
-function previousQuestion(){
-  current = (current - 1 + QUESTIONS.length) % QUESTIONS.length;
-  renderQuestion();
+function endGame(){
+  clearInterval(timerInterval);
+  document.getElementById("quizScreen").classList.add("hidden");
+  document.getElementById("endScreen").classList.remove("hidden");
+  document.getElementById("finalScore").textContent = `${score} / ${QUESTIONS_PER_GAME}`;
+  document.getElementById("finalStatus").textContent = score >= QUALIFY_SCORE
+    ? "Bravo, score éligible pour un cadeau"
+    : "Merci d’avoir participé";
+  if(score >= QUALIFY_SCORE) confettiBurst();
 }
 
 function toggleFullscreen(){
@@ -286,104 +296,42 @@ function toggleFullscreen(){
   else document.exitFullscreen();
 }
 
-function ensureAudio(){
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
-
-function tone(freq, duration, type="sine", volume=.05){
-  if(!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  gain.gain.value = volume;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  gain.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime + duration);
-  osc.stop(audioCtx.currentTime + duration);
-}
-
-function tickSound(){
-  ensureAudio();
-  tone(timeLeft <= 5 ? 760 : 520, .08, "square", .022);
-}
-
-function successSound(){
-  ensureAudio();
-  tone(523,.12,"sine",.05);
-  setTimeout(()=>tone(659,.12,"sine",.05),120);
-  setTimeout(()=>tone(784,.22,"sine",.06),240);
-}
-
-function wrongSound(){
-  ensureAudio();
-  tone(220,.18,"sawtooth",.04);
-  setTimeout(()=>tone(160,.24,"sawtooth",.04),160);
-}
-
-function toggleMusic(){
-  ensureAudio();
-  musicOn = !musicOn;
-  const btn = document.getElementById("musicBtn");
-  btn.textContent = musicOn ? "🎵" : "🔇";
-  btn.className = musicOn ? "music-toggle on" : "music-toggle";
-
-  clearInterval(musicTimer);
-  if(musicOn){
-    const notes = [196,247,294,330,392,330,294,247];
-    let i = 0;
-    musicTimer = setInterval(() => {
-      tone(notes[i % notes.length], .32, "sine", .018);
-      if(i % 2 === 0) tone(notes[(i+2) % notes.length] / 2, .38, "triangle", .012);
-      i++;
-    }, 360);
-  }
-}
-
 function confettiBurst(){
   const c = document.getElementById("confetti");
   const ctx = c.getContext("2d");
   c.width = innerWidth;
   c.height = innerHeight;
-
-  const pieces = Array.from({length:180}, () => ({
-    x: Math.random()*c.width,
-    y: -20 - Math.random()*220,
-    s: 5 + Math.random()*9,
-    v: 3 + Math.random()*7,
-    a: Math.random()*Math.PI*2,
-    color: ["#ff7a18","#ffb000","#ffffff","#f6c7d7","#cfefff","#cfefcf"][Math.floor(Math.random()*6)]
+  const pieces = Array.from({length:150}, () => ({
+    x:Math.random()*c.width,
+    y:-20-Math.random()*220,
+    s:5+Math.random()*9,
+    v:3+Math.random()*7,
+    a:Math.random()*Math.PI*2,
+    color:["#ff7a18","#ffb000","#ffffff","#f6c7d7","#cfefff","#cfefcf"][Math.floor(Math.random()*6)]
   }));
-
-  let frame = 0;
+  let frame=0;
   function loop(){
     ctx.clearRect(0,0,c.width,c.height);
-    pieces.forEach(p => {
-      p.y += p.v;
-      p.x += Math.sin(frame/10 + p.a) * 2.4;
-      p.a += .08;
+    pieces.forEach(p=>{
+      p.y+=p.v;
+      p.x+=Math.sin(frame/10+p.a)*2.4;
+      p.a+=.08;
       ctx.save();
       ctx.translate(p.x,p.y);
       ctx.rotate(p.a);
-      ctx.fillStyle = p.color;
+      ctx.fillStyle=p.color;
       ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*1.7);
       ctx.restore();
     });
     frame++;
-    if(frame < 160) requestAnimationFrame(loop);
+    if(frame<150) requestAnimationFrame(loop);
     else ctx.clearRect(0,0,c.width,c.height);
   }
   loop();
 }
 
-document.addEventListener("keydown", (e) => {
-  if(e.key === "ArrowRight") nextQuestion();
-  if(e.key === "ArrowLeft") previousQuestion();
+document.addEventListener("keydown", e => {
   if(e.key.toLowerCase() === "o") answer(true);
   if(e.key.toLowerCase() === "n") answer(false);
-  if(e.key === " ") restartTimer();
-  if(e.key.toLowerCase() === "m") toggleMusic();
+  if(e.key === "ArrowRight") nextQuestion();
 });
-
-renderQuestion();

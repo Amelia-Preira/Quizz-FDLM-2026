@@ -1,9 +1,13 @@
-# Quiz Top Chrono - Fête de la Musique 2026
+# Quiz Express 10 questions sur 30
 
-Améliorations :
-- chrono automatique selon la vitesse de lecture de la question ;
-- modes 10 s et 15 s conservés ;
-- affichage "Temps écoulé" réduit pour garder la réponse Oui/Non très visible ;
-- bouton icône musique : 🔇 coupé / 🎵 activé ;
-- adapté grand écran / vidéoprojecteur ;
-- boutons Oui / Non.
+Version GitHub Pages.
+
+Fonctionnement :
+- chaque nouvelle partie tire 10 questions aléatoires parmi les 30 ;
+- boutons Oui / Non ;
+- chrono automatique selon la longueur de la question ;
+- score final sur 10 ;
+- seuil conseillé : 8/10 pour être éligible à un cadeau ;
+- bouton Rejouer pour générer une nouvelle série.
+
+À déposer à la racine du dépôt GitHub.

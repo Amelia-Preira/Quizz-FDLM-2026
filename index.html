@@ -3,63 +3,75 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quiz Top Chrono - Fête de la Musique</title>
+<title>Quiz Express 10 questions</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="glow"></div>
 <canvas id="confetti"></canvas>
 
-<button class="music-toggle" onclick="toggleMusic()" id="musicBtn" title="Ambiance musicale">🔇</button>
-
 <header>
   <img src="assets/theme.png" class="logo" alt="Fête de la Musique 2026">
-  <div class="title-block">
-    <h1>Quiz Top Chrono</h1>
-    <p>Cadeaux offerts par la <strong>Direction de Site</strong></p>
+  <div>
+    <h1>Quiz Express</h1>
+    <p>10 questions tirées au hasard parmi 30</p>
+    <p class="gift">Cadeaux offerts par la <strong>Direction de Site</strong></p>
   </div>
 </header>
 
-<main class="quiz-card" id="quizCard">
-  <section class="topline">
-    <div>
-      <div class="counter" id="counter">Question 1 / 30</div>
-      <div class="chrono-mode" id="chronoMode">Temps adapté à la lecture</div>
+<main class="card">
+  <section id="startScreen" class="start">
+    <h2>Prêt à jouer ?</h2>
+    <p>Une série de 10 questions aléatoires va être générée.</p>
+    <p>Objectif recommandé : <strong>8 bonnes réponses sur 10</strong>.</p>
+    <button class="start-btn" onclick="startGame()">Démarrer une partie</button>
+  </section>
+
+  <section id="quizScreen" class="hidden">
+    <div class="topline">
+      <div>
+        <div class="counter" id="counter"></div>
+        <div class="score-mini" id="scoreMini"></div>
+      </div>
+      <div class="timer-wrap">
+        <svg class="timer-ring" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" class="timer-bg"></circle>
+          <circle cx="60" cy="60" r="52" class="timer-progress" id="timerProgress"></circle>
+        </svg>
+        <div class="timer" id="timer">15</div>
+      </div>
     </div>
 
-    <div class="timer-wrap">
-      <svg class="timer-ring" viewBox="0 0 120 120">
-        <circle cx="60" cy="60" r="52" class="timer-bg"></circle>
-        <circle cx="60" cy="60" r="52" class="timer-progress" id="timerProgress"></circle>
-      </svg>
-      <div class="timer" id="timer">15</div>
+    <div class="question" id="question"></div>
+
+    <div class="answer-buttons">
+      <button class="round yes" onclick="answer(true)">OUI</button>
+      <button class="round no" onclick="answer(false)">NON</button>
+    </div>
+
+    <section id="reveal" class="reveal hidden">
+      <div id="feedback" class="feedback"></div>
+      <div id="correctAnswer" class="correct-answer"></div>
+      <div id="explanation" class="explanation"></div>
+    </section>
+
+    <div class="nav">
+      <button onclick="nextQuestion()" id="nextBtn">Question suivante</button>
     </div>
   </section>
 
-  <div class="question" id="question"></div>
-
-  <div class="answer-buttons">
-    <button class="round answer-yes" onclick="answer(true)">OUI</button>
-    <button class="round answer-no" onclick="answer(false)">NON</button>
-  </div>
-
-  <section id="reveal" class="reveal hidden">
-    <div id="feedback" class="feedback"></div>
-    <div id="correctAnswer" class="correct-answer"></div>
-    <div id="explanation" class="explanation"></div>
+  <section id="endScreen" class="end hidden">
+    <h2>Résultat final</h2>
+    <div class="final-score" id="finalScore"></div>
+    <div class="final-status" id="finalStatus"></div>
+    <button class="start-btn" onclick="startGame()">Rejouer une nouvelle série</button>
   </section>
-
-  <div class="nav">
-    <button onclick="previousQuestion()">← Précédente</button>
-    <button onclick="restartTimer()">Relancer le chrono</button>
-    <button onclick="nextQuestion()">Question suivante →</button>
-  </div>
 </main>
 
-<footer class="controls">
-  <button onclick="setTimerMode('auto')">Top chrono auto</button>
-  <button onclick="setTimerMode(10)">10 s fixe</button>
-  <button onclick="setTimerMode(15)">15 s fixe</button>
+<footer>
+  <button onclick="setTimerMode('auto')">Chrono auto</button>
+  <button onclick="setTimerMode(10)">10 s</button>
+  <button onclick="setTimerMode(15)">15 s</button>
   <button onclick="toggleFullscreen()">Plein écran</button>
 </footer>
 
